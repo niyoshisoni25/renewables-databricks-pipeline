@@ -20,7 +20,8 @@ def rule_failure(rule):
 
 def cast_columns(df: DataFrame, columns: dict, keep=()) -> DataFrame:
     """Cast text columns to their configured types. Values that cannot be cast become null."""
-    return df.select(*[F.col(c).cast(t).alias(c) for c, t in columns.items()], *keep)
+    # try_cast returns null instead of raising an error, which matters on Databricks where ANSI mode is on by default
+    return df.select(*[F.expr(f"try_cast(`{c}` AS {t})").alias(c) for c, t in columns.items()], *keep)
 
 
 def add_dq_reason(df: DataFrame, rules) -> DataFrame:
