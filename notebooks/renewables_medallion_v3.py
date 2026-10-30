@@ -204,6 +204,7 @@ def stream_to_bronze(src):
     trigger(availableNow=True) = process everything that is new right now, then stop (incremental batch, no cluster left running).
     """
     schema = ", ".join(f"{c} string" for c in src["columns"])          # bronze stays all-text
+    rows_before = read_table("bronze", src["name"]).count() if table_exists("bronze", src["name"]) else 0
     reader = spark.readStream
     reader = reader.format("cloudFiles").option("cloudFiles.format", "csv") if IS_DBX else reader.format("csv")
     df = (reader.option("header", True).schema(schema).load(f"{LANDING}/{src['file_glob']}")
@@ -216,7 +217,8 @@ def stream_to_bronze(src):
     else:
         q = writer.format("delta" if USE_DELTA else "parquet").start(_path("bronze", src["name"]))
     q.awaitTermination()
-    return sum(p["numInputRows"] for p in q.recentProgress)
+    # count rows before/after instead of reading stream progress (progress numbers can come back empty on serverless)
+    return (read_table("bronze", src["name"]).count() if table_exists("bronze", src["name"]) else 0) - rows_before
 
 for s_ in SOURCES:
     print(f"bronze.{s_['name']}: loaded {stream_to_bronze(s_)} new rows")
