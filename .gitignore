@@ -1,0 +1,9 @@
+lakehouse/
+landing/
+checkpoints/
+spark-warehouse/
+metastore_db/
+__pycache__/
+.pytest_cache/
+*.pbix
+.env
