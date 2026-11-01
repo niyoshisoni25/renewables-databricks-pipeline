@@ -62,8 +62,8 @@ def test_dedupe_keeps_newest(spark):
     assert out == {"R1": 2.0, "R2": 3.0}
 
 
-   def test_null_status_is_rejected_when_not_null_rule_is_added(spark):
-       # "allowed" ignores nulls, so a missing status slipped through until we added a not_null rule on it
-       assert reasons(spark, [("T1", 8.5, None)]) == [""]
-       df = add_dq_reason(make(spark, [("T1", 8.5, None)]), RULES + [("not_null", "status")])
-       assert "status is null" in df.collect()[0]["_dq_reason"]
+def test_null_status_is_rejected_when_not_null_rule_is_added(spark):
+    # "allowed" ignores nulls, so a missing status slipped through until we added a not_null rule on it
+    assert reasons(spark, [("T1", 8.5, None)]) == [""]
+    df = add_dq_reason(make(spark, [("T1", 8.5, None)]), RULES + [("not_null", "status")])
+    assert "status is null" in df.collect()[0]["_dq_reason"]
