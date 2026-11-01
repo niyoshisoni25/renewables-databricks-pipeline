@@ -203,6 +203,8 @@ def stream_to_bronze(src):
     The checkpoint remembers which files were already processed, so this replaces our manual 'skip loaded files' join.
     trigger(availableNow=True) = process everything that is new right now, then stop (incremental batch, no cluster left running).
     """
+    for old_q in spark.streams.active:           # stop any stream left over from an earlier run in this session
+        old_q.stop()
     schema = ", ".join(f"{c} string" for c in src["columns"])          # bronze stays all-text
     rows_before = read_table("bronze", src["name"]).count() if table_exists("bronze", src["name"]) else 0
     reader = spark.readStream
@@ -216,7 +218,9 @@ def stream_to_bronze(src):
         q = writer.toTable(_name("bronze", src["name"]))
     else:
         q = writer.format("delta" if USE_DELTA else "parquet").start(_path("bronze", src["name"]))
-    q.awaitTermination()
+    q.awaitTermination(180)                      # wait up to 3 minutes for the new files to be processed
+    if q.isActive:                               # a finished availableNow stream should already be stopped; make sure it never lingers
+        q.stop()
     # count rows before/after instead of reading stream progress (progress numbers can come back empty on serverless)
     return (read_table("bronze", src["name"]).count() if table_exists("bronze", src["name"]) else 0) - rows_before
 
