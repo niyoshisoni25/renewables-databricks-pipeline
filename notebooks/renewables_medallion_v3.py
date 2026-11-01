@@ -264,6 +264,7 @@ site_daily = (readings.join(master, "turbine_id")
          F.round(F.sum("power_kw") / F.sum("capacity_kw"), 4).alias("capacity_factor"),
          F.round(F.avg(F.when(F.col("status") == "RUNNING", 1).otherwise(0)), 4).alias("availability"),
          F.round(F.avg("wind_speed_ms"), 2).alias("avg_wind_speed_ms"),
+         F.round(F.max("wind_speed_ms"), 2).alias("max_wind_speed_ms"),
          F.countDistinct("turbine_id").alias("turbines_reporting"))
     .orderBy("site", "reading_date"))
 write_table(site_daily, "gold", "site_daily_performance")
