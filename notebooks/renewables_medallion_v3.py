@@ -108,6 +108,7 @@ SOURCES = [
             ("not_null", "reading_id"), ("not_null", "turbine_id"), ("not_null", "reading_ts"),
             ("range", "wind_speed_ms", 0, 40), ("range", "power_kw", 0, 4000),
             ("allowed", "status", ["RUNNING", "STOPPED", "MAINTENANCE"]),
+            ("not_null", "status"),
         ],
     },
     {
