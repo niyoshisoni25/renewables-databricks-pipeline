@@ -275,7 +275,7 @@ write_table(dq, "gold", "data_quality_summary", mode="append")
 
 # --- EXTENSION A: underperformance flag (simple rule-based anomaly detection) ---
 # A turbine that is RUNNING in strong wind (>= 12 m/s, rated-power territory) but produces < 80% of its capacity is suspicious.
-RATED_WIND, UNDERPERF_THRESHOLD = 12.0, 0.8
+RATED_WIND, UNDERPERF_THRESHOLD = 12.0, 0.85
 turbine_daily = (readings.join(master, "turbine_id")
     .withColumn("reading_date", F.to_date("reading_ts"))
     .withColumn("strong_wind_running", (F.col("status") == "RUNNING") & (F.col("wind_speed_ms") >= RATED_WIND))
